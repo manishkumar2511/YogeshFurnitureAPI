@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using YogeshFurnitureAPI.Helper.Services;
 using YogeshFurnitureAPI.Interface.Account;
 using YogeshFurnitureAPI.Model.Account;
 using YogeshFurnitureAPI.Model.ResponseModel;
@@ -12,12 +13,16 @@ namespace YogeshFurnitureAPI.Service
     {
         private readonly UserManager<YogeshFurnitureUsers> _userManager;
         private readonly SignInManager<YogeshFurnitureUsers> _signInManager;
-
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly JWTService _jwtService;
         // Constructor with both UserManager and SignInManager injected
-        public AccountService(UserManager<YogeshFurnitureUsers> userManager, SignInManager<YogeshFurnitureUsers> signInManager)
+        public AccountService(UserManager<YogeshFurnitureUsers> userManager, SignInManager<YogeshFurnitureUsers> signInManager,
+            RoleManager<IdentityRole> roleManager, JWTService jwtService)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+            _roleManager = roleManager;
+            _jwtService = jwtService;
         }
 
         public async Task<ResponseMessage> LoginAsync(LoginRequest request)
@@ -38,14 +43,24 @@ namespace YogeshFurnitureAPI.Service
 
             if (signInResult.Succeeded)
             {
-                return new ResponseMessage("Login successful.", null, true);
+                var roles = await _userManager.GetRolesAsync(user);
+                string token = _jwtService.GenerateJwtToken(user, roles);
+                var role = roles.FirstOrDefault();
+
+                var userDto = new CreateUserDTO
+                {
+                    Token = token,
+                    Username = user.UserName, 
+                    Role = role 
+                };
+
+                return new ResponseMessage("Login successful.", userDto, true);
             }
             else
             {
                 return new ResponseMessage("Invalid credentials.", null, false);
             }
         }
-
 
         public async Task<ResponseMessage> CreateYogeshFurnitureUsersAsync(CreateYogeshFurnitureUsers request)
         {
@@ -55,6 +70,7 @@ namespace YogeshFurnitureAPI.Service
                 return new ResponseMessage("Error: Email or PhoneNumber is required to register a user.", null, false);
             }
 
+            // Check if email or phone number already exists
             YogeshFurnitureUsers existingUser = null;
             if (!string.IsNullOrEmpty(request.Email))
             {
@@ -70,6 +86,16 @@ namespace YogeshFurnitureAPI.Service
                 return new ResponseMessage("User with the provided email or phone number already exists.", null, false);
             }
 
+            // Ensure the "User" role exists, create it if not
+            if (!await _roleManager.RoleExistsAsync("User"))
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
+                if (!roleResult.Succeeded)
+                {
+                    return new ResponseMessage("Failed to create User role. " + string.Join(", ", roleResult.Errors.Select(e => e.Description)), null, false);
+                }
+            }
+
             var user = new YogeshFurnitureUsers
             {
                 UserName = userName,
@@ -82,6 +108,14 @@ namespace YogeshFurnitureAPI.Service
 
             if (result.Succeeded)
             {
+                // Assign the "User" role
+                var roleAssignResult = await _userManager.AddToRoleAsync(user, "User");
+                if (!roleAssignResult.Succeeded)
+                {
+                    return new ResponseMessage("User registration successful, but failed to assign role: " + string.Join(", ", roleAssignResult.Errors.Select(e => e.Description)), user, true);
+                }
+
+                // Add claims
                 if (!string.IsNullOrEmpty(user.Email))
                 {
                     var emailClaimResult = await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Email, user.Email));
@@ -100,13 +134,7 @@ namespace YogeshFurnitureAPI.Service
                     }
                 }
 
-                var roleClaimResult = await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "User"));
-                if (!roleClaimResult.Succeeded)
-                {
-                    return new ResponseMessage("User registration successful, but failed to add role claim: " + string.Join(", ", roleClaimResult.Errors.Select(e => e.Description)), user, true);
-                }
-
-                return new ResponseMessage("User registration successful with claims.", user, true);
+                return new ResponseMessage("User registration successful with claims and role assigned.", user, true);
             }
 
             return new ResponseMessage("Registration failed. " + string.Join(", ", result.Errors.Select(e => e.Description)), null, false);
