@@ -1,0 +1,88 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using YogeshFurnitureAPI.Data;
+using YogeshFurnitureAPI.Model.ResponseModel;
+using YogeshFurnitureAPI.Model;
+using YogeshFurnitureAPI.Interface;
+
+namespace YogeshFurnitureAPI.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductController : ControllerBase
+    {
+        private readonly IProductService _productService;
+        private readonly ILogger<ProductController> _logger;
+
+        public ProductController(IProductService productService, ILogger<ProductController> logger)
+        {
+            _productService = productService;
+            _logger = logger;
+        }
+
+        // GET: api/Product
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> GetProducts()
+        {
+            try
+            {
+                var result = await _productService.GetAllProductsAsync();
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "No products found." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProducts), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products." });
+            }
+        }
+
+        // GET: api/Product/category/{categoryId}
+        [HttpGet("category/{categoryId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> GetProductsByCategory(int categoryId)
+        {
+            try
+            {
+                var result = await _productService.GetProductsByCategoryAsync(categoryId);
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "No products found for the selected category." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByCategory), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products for the category." });
+            }
+        }
+
+        // PUT: api/Product/{id}
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> UpdateProduct(int id, Product product)
+        {
+            try
+            {
+                var result = await _productService.UpdateProductAsync(id, product);
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(UpdateProduct), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error updating product." });
+            }
+        }
+    }
+}

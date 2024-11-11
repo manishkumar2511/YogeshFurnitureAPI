@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using YogeshFurnitureAPI.Interface.Account;
 using YogeshFurnitureAPI.Service;
 using YogeshFurnitureAPI.Helper.Services;
+using YogeshFurnitureAPI.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<JWTService>();
 
 builder.Services.AddCors(options =>
