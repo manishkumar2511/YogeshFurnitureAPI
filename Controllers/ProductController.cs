@@ -21,8 +21,29 @@ namespace YogeshFurnitureAPI.Controllers
             _logger = logger;
         }
 
+        [HttpPost("AddProduct")]
+       // [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> AddProduct([FromBody] Product product)// IFormFile image
+        {
+            try
+            {
+                var result = await _productService.AddProductAsync(product); //, image
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(AddProduct), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error adding product." });
+            }
+        }
+
         // GET: api/Product
-        [HttpGet]
+        [HttpGet("GetProducts")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> GetProducts()
@@ -43,7 +64,7 @@ namespace YogeshFurnitureAPI.Controllers
         }
 
         // GET: api/Product/category/{categoryId}
-        [HttpGet("category/{categoryId}")]
+        [HttpGet("GetProductsByCategory/{categoryId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> GetProductsByCategory(int categoryId)
@@ -82,6 +103,27 @@ namespace YogeshFurnitureAPI.Controllers
             {
                 _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(UpdateProduct), ex.Message);
                 return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error updating product." });
+            }
+        }
+        // DELETE: api/Product/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            try
+            {
+                var result = await _productService.DeleteProductAsync(id);
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(DeleteProduct), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error deleting product." });
             }
         }
     }

@@ -54,6 +54,8 @@ namespace YogeshFurnitureAPI.Data
                 entity.Property(p => p.ProductName).IsRequired().HasMaxLength(100);
                 entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
                 entity.Property(p => p.Description).HasMaxLength(500);
+                entity.Property(p => p.ImageUrl).HasMaxLength(500);
+
                 entity.HasOne(p => p.Category)
                     .WithMany(c => c.Products)
                     .HasForeignKey(p => p.CategoryId);

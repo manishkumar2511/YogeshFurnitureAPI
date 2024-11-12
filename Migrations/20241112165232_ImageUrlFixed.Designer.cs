@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using YogeshFurnitureAPI.Data;
 
@@ -11,9 +12,11 @@ using YogeshFurnitureAPI.Data;
 namespace YogeshFurnitureAPI.Migrations
 {
     [DbContext(typeof(YogeshFurnitureDbContext))]
-    partial class YogeshFurnitureDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241112165232_ImageUrlFixed")]
+    partial class ImageUrlFixed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
