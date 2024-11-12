@@ -38,10 +38,10 @@ namespace YogeshFurnitureAPI.Controllers
             }
         }
 
-        [HttpPost("CreateYogeshFurnitureUsers")]
+        [HttpPost("CreateUsers")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(typeof(ErrorMessageWrapper), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> CreateYogeshFurnitureUsers([FromBody] CreateYogeshFurnitureUsers request)
+        public async Task<IActionResult> CreateUsers([FromBody] CreateYogeshFurnitureUsers request)
         {
             try
             {
