@@ -15,11 +15,10 @@ namespace YogeshFurnitureAPI.Service
             _context = context;
         }
 
-        public async Task<ResponseMessage> AddProductAsync(Product productRequest, IFormFile image)
+        public async Task<ResponseMessage> AddProductAsync(Product productRequest)
         {
             try
             {
-                // Validate category
                 var category = await _context.Categories
                     .Where(c => c.CategoryId == productRequest.CategoryId)
                     .FirstOrDefaultAsync();
@@ -29,18 +28,17 @@ namespace YogeshFurnitureAPI.Service
                     return new ResponseMessage("Category not found", null, false);
                 }
 
-                // Handle image upload
-                if (image != null && image.Length > 0)
+                if (productRequest.ProductImage != null && productRequest.ProductImage.Length > 0)
                 {
                     var folderPath = Path.Combine("wwwroot", "images", category.CategoryName);
-                    Directory.CreateDirectory(folderPath); // Create directory if it doesn't exist
+                    Directory.CreateDirectory(folderPath);
 
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                    var fileName = $"{Path.GetFileNameWithoutExtension(productRequest.ProductImage.FileName)}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(productRequest.ProductImage.FileName)}";
                     var filePath = Path.Combine(folderPath, fileName);
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        await image.CopyToAsync(fileStream);
+                        await productRequest.ProductImage.CopyToAsync(fileStream);
                     }
 
                     productRequest.ImageUrl = $"/images/{category.CategoryName}/{fileName}";
@@ -50,7 +48,6 @@ namespace YogeshFurnitureAPI.Service
                     return new ResponseMessage("Image file is required", null, false);
                 }
 
-                // Add product to database
                 _context.Products.Add(productRequest);
                 await _context.SaveChangesAsync();
 
@@ -58,7 +55,6 @@ namespace YogeshFurnitureAPI.Service
             }
             catch (Exception ex)
             {
-                // Log the exception (optional logging mechanism can be added)
                 return new ResponseMessage($"Error adding product: {ex.Message}", null, false);
             }
         }

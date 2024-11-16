@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace YogeshFurnitureAPI.Model
 {
@@ -11,7 +12,10 @@ namespace YogeshFurnitureAPI.Model
         public string ? ImageUrl { get; set; }
         public int CategoryId { get; set; }
 
+        [NotMapped]
+        public IFormFile? ProductImage { get; set; }
+
         [JsonIgnore]
-        public Category? Category { get; set; }
+        public Category? Category { get; set; } = new Category();
     }
 }

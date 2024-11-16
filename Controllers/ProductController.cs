@@ -5,6 +5,7 @@ using YogeshFurnitureAPI.Data;
 using YogeshFurnitureAPI.Model.ResponseModel;
 using YogeshFurnitureAPI.Model;
 using YogeshFurnitureAPI.Interface;
+using AutoMapper;
 
 namespace YogeshFurnitureAPI.Controllers
 {
@@ -14,23 +15,25 @@ namespace YogeshFurnitureAPI.Controllers
     {
         private readonly IProductService _productService;
         private readonly ILogger<ProductController> _logger;
+        private readonly IMapper _mapper;
 
-        public ProductController(IProductService productService, ILogger<ProductController> logger)
+        public ProductController(IProductService productService, ILogger<ProductController> logger, IMapper mapper)
         {
             _productService = productService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpPost("AddProduct")]
         // [Authorize(Roles = "Admin")]
-        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
-        public async Task<IActionResult> AddProduct([FromBody] Product product, IFormFile image)// IFormFile image
+        public async Task<IActionResult> AddProduct(ProductDTO productDto)
         {
             try
             {
-                var result = await _productService.AddProductAsync(product, image); //, image
+                var product = _mapper.Map<Product>(productDto);
+                var result = await _productService.AddProductAsync(product);
                 if (result.IsSuccessfull)
                     return Ok(result);
 
