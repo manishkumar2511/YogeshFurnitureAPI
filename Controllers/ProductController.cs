@@ -22,14 +22,15 @@ namespace YogeshFurnitureAPI.Controllers
         }
 
         [HttpPost("AddProduct")]
-       // [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
+        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
-        public async Task<IActionResult> AddProduct([FromBody] Product product)// IFormFile image
+        public async Task<IActionResult> AddProduct([FromBody] Product product, IFormFile image)// IFormFile image
         {
             try
             {
-                var result = await _productService.AddProductAsync(product); //, image
+                var result = await _productService.AddProductAsync(product, image); //, image
                 if (result.IsSuccessfull)
                     return Ok(result);
 
