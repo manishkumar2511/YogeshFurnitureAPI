@@ -8,6 +8,8 @@ using YogeshFurnitureAPI.Interface.Account;
 using YogeshFurnitureAPI.Service;
 using YogeshFurnitureAPI.Helper.Services;
 using YogeshFurnitureAPI.Interface;
+using YogeshFurnitureAPI.Interface.Notification;
+using YogeshFurnitureAPI.Service.Notification;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +23,7 @@ builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>()
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JWTService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddCors(options =>
