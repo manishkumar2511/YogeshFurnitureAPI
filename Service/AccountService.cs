@@ -148,7 +148,7 @@ namespace YogeshFurnitureAPI.Service
 
                 // You can later integrate email/SMS to send the generated password
                 // For now, this is a response message stating that a password was generated
-                return new ResponseMessage("User registration successful with claims and role assigned. A random password has been generated.", user, true, (int)HttpStatusCode.Created);
+                return new ResponseMessage("User registration successful with claims and role assigned. A random password has been generated.", new { user = user, UserName = user.UserName, Password = password }, true, (int)HttpStatusCode.Created);
             }
 
             return new ResponseMessage("Registration failed. " + string.Join(", ", result.Errors.Select(e => e.Description)), null, false, (int)HttpStatusCode.BadRequest);
