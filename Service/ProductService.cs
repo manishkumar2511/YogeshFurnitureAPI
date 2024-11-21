@@ -3,6 +3,7 @@ using YogeshFurnitureAPI.Interface;
 using YogeshFurnitureAPI.Model.ResponseModel;
 using YogeshFurnitureAPI.Model;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace YogeshFurnitureAPI.Service
 {
@@ -25,7 +26,7 @@ namespace YogeshFurnitureAPI.Service
 
                 if (category == null)
                 {
-                    return new ResponseMessage("Category not found", null, false);
+                    return new ResponseMessage("Category not found", null, false, (int)HttpStatusCode.NotFound);
                 }
 
                 if (productRequest.ProductImage != null && productRequest.ProductImage.Length > 0)
@@ -45,36 +46,32 @@ namespace YogeshFurnitureAPI.Service
                 }
                 else
                 {
-                    return new ResponseMessage("Image file is required", null, false);
+                    return new ResponseMessage("Image file is required", null, false, (int)HttpStatusCode.BadRequest);
                 }
 
                 _context.Products.Add(productRequest);
                 await _context.SaveChangesAsync();
 
-                return new ResponseMessage("Product added successfully", productRequest, true);
+                return new ResponseMessage("Product added successfully", productRequest, true, (int)HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
-                return new ResponseMessage($"Error adding product: {ex.Message}", null, false);
+                return new ResponseMessage($"Error adding product: {ex.Message}", null, false, (int)HttpStatusCode.InternalServerError);
             }
         }
-
-
-
-
 
         public async Task<ResponseMessage> DeleteProductAsync(int id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null)
             {
-                return new ResponseMessage("Product not found.", null, false);
+                return new ResponseMessage("Product not found.", null, false, (int)HttpStatusCode.NotFound);
             }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
-            return new ResponseMessage("Product deleted successfully.", product, true);
+            return new ResponseMessage("Product deleted successfully.", product, true, (int)HttpStatusCode.OK);
         }
 
         public async Task<Response> GetAllProductsAsync()
@@ -82,9 +79,9 @@ namespace YogeshFurnitureAPI.Service
             var products = await _context.Products.Include(p => p.Category).ToListAsync();
             if (products == null || !products.Any())
             {
-                return new Response(null, 0, false);
+                return new Response(null, 0, false, (int)HttpStatusCode.NotFound);
             }
-            return new Response(products, products.Count, true);
+            return new Response(products, products.Count, true, (int)HttpStatusCode.OK);
         }
 
         public async Task<Response> GetProductsByCategoryAsync(int categoryId)
@@ -96,9 +93,9 @@ namespace YogeshFurnitureAPI.Service
 
             if (products == null || !products.Any())
             {
-                return new Response(null, 0, false);
+                return new Response(null, 0, false, (int)HttpStatusCode.NotFound);
             }
-            return new Response(products, products.Count, true);
+            return new Response(products, products.Count, true, (int)HttpStatusCode.OK);
         }
 
         public async Task<ResponseMessage> UpdateProductAsync(int id, Product product)
@@ -106,7 +103,7 @@ namespace YogeshFurnitureAPI.Service
             var existingProduct = await _context.Products.FindAsync(id);
             if (existingProduct == null)
             {
-                return new ResponseMessage("Product not found.", null, false);
+                return new ResponseMessage("Product not found.", null, false, (int)HttpStatusCode.NotFound);
             }
 
             existingProduct.ProductName = product.ProductName;
@@ -116,8 +113,7 @@ namespace YogeshFurnitureAPI.Service
 
             await _context.SaveChangesAsync();
 
-            return new ResponseMessage("Product updated successfully.", product, true);
+            return new ResponseMessage("Product updated successfully.", product, true, (int)HttpStatusCode.OK);
         }
     }
-
 }

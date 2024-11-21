@@ -11,13 +11,27 @@ using YogeshFurnitureAPI.Interface;
 using YogeshFurnitureAPI.Interface.Notification;
 using YogeshFurnitureAPI.Service.Notification;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+// Load UserSecrets for development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+// Configure services
 builder.Services.AddDbContext<YogeshFurnitureDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>()
+builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = false; // Require at least one digit
+    options.Password.RequireLowercase = false; // Require at least one lowercase letter
+    options.Password.RequireUppercase = false; // Require at least one uppercase letter
+    options.Password.RequireNonAlphanumeric = false; // Require at least one special character
+    options.Password.RequiredLength = 3; // Set minimum password length (e.g., 12 characters)
+    options.Password.RequiredUniqueChars = 0; // Set the number of unique characters required
+})
     .AddEntityFrameworkStores<YogeshFurnitureDbContext>()
     .AddDefaultTokenProviders();
 
@@ -26,10 +40,11 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JWTService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 // Add controllers and Swagger documentation
@@ -39,7 +54,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
@@ -56,10 +70,22 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var configuration = services.GetRequiredService<IConfiguration>();
     var userManager = services.GetRequiredService<UserManager<YogeshFurnitureUsers>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = services.GetRequiredService<ILogger<AdminUserInitializer>>();
 
+    // Check for required admin credentials in configuration
+    var adminEmail = configuration["Admin:Email"];
+    var adminPassword = configuration["Admin:Password"];
+
+    if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+    {
+        logger.LogError("Admin email or password is not configured in user secrets.");
+        throw new Exception("Admin email or password is not configured in user secrets.");
+    }
+
+    // Initialize roles and admin user
     await AdminUserInitializer.Initialize(services, userManager, roleManager, logger);
 }
 
