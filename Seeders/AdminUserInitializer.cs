@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
 using YogeshFurnitureAPI.Model.Account;
 using System.Security.Claims;
 
@@ -8,6 +9,20 @@ namespace YogeshFurnitureAPI.Seeders
     {
         public static async Task Initialize(IServiceProvider serviceProvider, UserManager<YogeshFurnitureUsers> userManager, RoleManager<IdentityRole> roleManager, ILogger<AdminUserInitializer> logger)
         {
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+            // Get admin user details from configuration
+            var adminEmail = configuration["Admin:Email"];
+            var adminPassword = configuration["Admin:Password"];
+            var adminPhoneNumber = configuration["Admin:PhoneNumber"];
+            var adminUserName = configuration["Admin:UserName"];
+
+            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            {
+                logger.LogError("Admin email or password is missing in configuration.");
+                throw new Exception("Admin email or password is missing in configuration.");
+            }
+
             // Check if the "Admin" role exists, if not, create it
             var role = await roleManager.FindByNameAsync("Admin");
             if (role == null)
@@ -24,19 +39,19 @@ namespace YogeshFurnitureAPI.Seeders
                 }
             }
 
-            var user = await userManager.FindByEmailAsync("testuser@yopmail.com");
+            var user = await userManager.FindByEmailAsync(adminEmail);
 
             if (user == null)
             {
                 user = new YogeshFurnitureUsers
                 {
-                    UserName = "testuser@yopmail.com",
-                    Email = "testuser@yopmail.com",
-                    PhoneNumber = "9117993206",
+                    UserName = adminUserName,
+                    Email = adminEmail,
+                    PhoneNumber = adminPhoneNumber,
                     CreatedDate = DateTime.Now
                 };
 
-                var result = await userManager.CreateAsync(user, "Admin@123");
+                var result = await userManager.CreateAsync(user, adminPassword);
 
                 if (result.Succeeded)
                 {

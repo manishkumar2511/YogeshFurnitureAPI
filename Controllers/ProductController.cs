@@ -24,6 +24,7 @@ namespace YogeshFurnitureAPI.Controllers
             _mapper = mapper;
         }
 
+        // POST: api/Product/AddProduct
         [HttpPost("AddProduct")]
         // [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
@@ -34,6 +35,7 @@ namespace YogeshFurnitureAPI.Controllers
             {
                 var product = _mapper.Map<Product>(productDto);
                 var result = await _productService.AddProductAsync(product);
+
                 if (result.IsSuccessfull)
                     return Ok(result);
 
@@ -46,7 +48,7 @@ namespace YogeshFurnitureAPI.Controllers
             }
         }
 
-        // GET: api/Product
+        // GET: api/Product/GetProducts
         [HttpGet("GetProducts")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
@@ -55,6 +57,7 @@ namespace YogeshFurnitureAPI.Controllers
             try
             {
                 var result = await _productService.GetAllProductsAsync();
+
                 if (result.IsSuccessfull)
                     return Ok(result);
 
@@ -67,7 +70,7 @@ namespace YogeshFurnitureAPI.Controllers
             }
         }
 
-        // GET: api/Product/category/{categoryId}
+        // GET: api/Product/GetProductsByCategory/{categoryId}
         [HttpGet("GetProductsByCategory/{categoryId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
@@ -76,6 +79,7 @@ namespace YogeshFurnitureAPI.Controllers
             try
             {
                 var result = await _productService.GetProductsByCategoryAsync(categoryId);
+
                 if (result.IsSuccessfull)
                     return Ok(result);
 
@@ -93,11 +97,13 @@ namespace YogeshFurnitureAPI.Controllers
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
-        public async Task<IActionResult> UpdateProduct(int id, Product product)
+        public async Task<IActionResult> UpdateProduct(int id, ProductDTO productDto)
         {
             try
             {
+                var product = _mapper.Map<Product>(productDto);
                 var result = await _productService.UpdateProductAsync(id, product);
+
                 if (result.IsSuccessfull)
                     return Ok(result);
 
@@ -109,6 +115,7 @@ namespace YogeshFurnitureAPI.Controllers
                 return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error updating product." });
             }
         }
+
         // DELETE: api/Product/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
@@ -119,6 +126,7 @@ namespace YogeshFurnitureAPI.Controllers
             try
             {
                 var result = await _productService.DeleteProductAsync(id);
+
                 if (result.IsSuccessfull)
                     return Ok(result);
 
