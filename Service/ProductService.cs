@@ -15,13 +15,22 @@ namespace YogeshFurnitureAPI.Service
         {
             _context = context;
         }
+        public async Task<Response> GetProductCategoryAsync()
+        {
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            if (categories == null || !categories.Any())
+            {
+                return new Response(null, 0, false, (int)HttpStatusCode.NotFound);
+            }
+            return new Response(categories, categories.Count, true, (int)HttpStatusCode.OK);
+        }
 
         public async Task<ResponseMessage> AddProductAsync(Product productRequest)
         {
             try
             {
                 var category = await _context.Categories
-                    .Where(c => c.CategoryId == productRequest.CategoryId)
+                    .Where(c => c.CategoryId == productRequest.CategoryId).AsNoTracking()
                     .FirstOrDefaultAsync();
 
                 if (category == null)
@@ -73,10 +82,11 @@ namespace YogeshFurnitureAPI.Service
 
             return new ResponseMessage("Product deleted successfully.", product, true, (int)HttpStatusCode.OK);
         }
+        
 
         public async Task<Response> GetAllProductsAsync()
         {
-            var products = await _context.Products.Include(p => p.Category).ToListAsync();
+            var products = await _context.Products.Include(p => p.Category).AsNoTracking().ToListAsync();
             if (products == null || !products.Any())
             {
                 return new Response(null, 0, false, (int)HttpStatusCode.NotFound);
@@ -88,7 +98,7 @@ namespace YogeshFurnitureAPI.Service
         {
             var products = await _context.Products
                                           .Where(p => p.CategoryId == categoryId)
-                                          .Include(p => p.Category)
+                                          .Include(p => p.Category).AsNoTracking()
                                           .ToListAsync();
 
             if (products == null || !products.Any())

@@ -24,6 +24,27 @@ namespace YogeshFurnitureAPI.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("GetProductCategory")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
+        public async Task<IActionResult> GetProductCategory()
+        {
+            try
+            {
+                var result = await _productService.GetProductCategoryAsync();
+
+                if (result.IsSuccessfull)
+                    return Ok(result);
+
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "No products found for the selected category." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByCategory), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products for the category." });
+            }
+        }
+
         // POST: api/Product/AddProduct
         [HttpPost("AddProduct")]
         // [Authorize(Roles = "Admin")]
