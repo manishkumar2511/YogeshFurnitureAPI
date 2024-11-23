@@ -28,12 +28,12 @@ namespace YogeshFurnitureAPI.Helper.Services
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
+                _configuration["JwtSettings:Issuer"],
+                _configuration["JwtSettings:Audience"],
                 claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);

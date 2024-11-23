@@ -35,6 +35,24 @@ builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>(options =>
     .AddEntityFrameworkStores<YogeshFurnitureDbContext>()
     .AddDefaultTokenProviders();
 
+
+// Configure Authentication with JWT
+//builder.Services.AddAuthentication("Bearer")
+//    .AddJwtBearer(options =>
+//    {
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateLifetime = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+//            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+//        };
+//    });
+
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
