@@ -74,7 +74,6 @@ namespace YogeshFurnitureAPI.Service
                 return new ResponseMessage("Error: Email or PhoneNumber is required to register a user.", null, false, (int)HttpStatusCode.BadRequest);
             }
 
-            // Check if the user already exists
             YogeshFurnitureUsers existingUser = null;
             if (!string.IsNullOrEmpty(request.Email))
             {
@@ -90,7 +89,6 @@ namespace YogeshFurnitureAPI.Service
                 return new ResponseMessage("User with the provided email or phone number already exists.", null, false, (int)HttpStatusCode.Conflict);
             }
 
-            // Ensure the "User" role exists, if not, create it
             if (!await _roleManager.RoleExistsAsync("User"))
             {
                 var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
@@ -100,9 +98,7 @@ namespace YogeshFurnitureAPI.Service
                 }
             }
 
-            // Generate a random password if not provided
-            string password = Guid.NewGuid().ToString("N").Substring(0, 8); // Generates a random password of 8 characters
-
+            string password = Guid.NewGuid().ToString("N").Substring(0, 8); 
             var user = new YogeshFurnitureUsers
             {
                 UserName = userName,
@@ -111,23 +107,19 @@ namespace YogeshFurnitureAPI.Service
                 CreatedDate = DateTime.Now
             };
 
-            // Hash the generated password
             var passwordHasher = new PasswordHasher<YogeshFurnitureUsers>();
             var hashedPassword = passwordHasher.HashPassword(user, password);
 
-            // Create the user with the hashed password
             var result = await _userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
-                // Assign the "User" role to the new user
                 var roleAssignResult = await _userManager.AddToRoleAsync(user, "User");
                 if (!roleAssignResult.Succeeded)
                 {
                     return new ResponseMessage("User registration successful, but failed to assign role: " + string.Join(", ", roleAssignResult.Errors.Select(e => e.Description)), user, true, (int)HttpStatusCode.OK);
                 }
 
-                // Add claims if email or phone number is provided
                 if (!string.IsNullOrEmpty(user.Email))
                 {
                     var emailClaimResult = await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Email, user.Email));

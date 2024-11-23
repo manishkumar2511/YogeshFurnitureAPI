@@ -10,6 +10,9 @@ using YogeshFurnitureAPI.Helper.Services;
 using YogeshFurnitureAPI.Interface;
 using YogeshFurnitureAPI.Interface.Notification;
 using YogeshFurnitureAPI.Service.Notification;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,20 +40,33 @@ builder.Services.AddIdentity<YogeshFurnitureUsers, IdentityRole>(options =>
 
 
 // Configure Authentication with JWT
-//builder.Services.AddAuthentication("Bearer")
-//    .AddJwtBearer(options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-//            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
-//        };
-//    });
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Key"))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsync("{\"error\":\"Authentication failed. Token is invalid or expired.\"}");
+            },
+            OnTokenValidated = context =>
+            {
+                return Task.CompletedTask;
+            }
+        };
+    });
 
 
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -121,7 +137,7 @@ app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseStaticFiles();
+app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthorization();
-
 app.MapControllers();
 app.Run();

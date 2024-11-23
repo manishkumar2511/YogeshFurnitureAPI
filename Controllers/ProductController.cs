@@ -6,6 +6,7 @@ using YogeshFurnitureAPI.Model.ResponseModel;
 using YogeshFurnitureAPI.Model;
 using YogeshFurnitureAPI.Interface;
 using AutoMapper;
+using System.Security.Claims;
 
 namespace YogeshFurnitureAPI.Controllers
 {
@@ -22,6 +23,14 @@ namespace YogeshFurnitureAPI.Controllers
             _productService = productService;
             _logger = logger;
             _mapper = mapper;
+        }
+
+        private string GetUserRole()
+        {
+            var roleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+            var role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == roleClaimType)?.Value;
+            _logger.LogInformation("Determined role: {Role}", role);
+            return role;
         }
 
         [HttpGet("GetProductCategory")]
@@ -47,13 +56,16 @@ namespace YogeshFurnitureAPI.Controllers
 
         // POST: api/Product/AddProduct
         [HttpPost("AddProduct")]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> AddProduct(ProductDTO productDto)
         {
             try
             {
+                var userRole = GetUserRole(); 
+                _logger.LogInformation("User with role {Role} accessed GetProductCategory.", userRole);
+
                 var product = _mapper.Map<Product>(productDto);
                 var result = await _productService.AddProductAsync(product);
 
@@ -122,6 +134,9 @@ namespace YogeshFurnitureAPI.Controllers
         {
             try
             {
+                var userRole = GetUserRole(); 
+                _logger.LogInformation("User with role {Role} accessed GetProductCategory.", userRole);
+
                 var product = _mapper.Map<Product>(productDto);
                 var result = await _productService.UpdateProductAsync(id, product);
 
@@ -146,6 +161,9 @@ namespace YogeshFurnitureAPI.Controllers
         {
             try
             {
+                var userRole = GetUserRole(); 
+                _logger.LogInformation("User with role {Role} accessed GetProductCategory.", userRole);
+
                 var result = await _productService.DeleteProductAsync(id);
 
                 if (result.IsSuccessfull)
