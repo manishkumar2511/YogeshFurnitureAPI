@@ -36,7 +36,7 @@ namespace YogeshFurnitureAPI.Controllers
         [HttpGet("GetProductCategory")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
-        public async Task<IActionResult> GetProductCategory()
+        public async Task<IActionResult> GetProdtCategory()
         {
             try
             {
@@ -56,7 +56,7 @@ namespace YogeshFurnitureAPI.Controllers
 
         // POST: api/Product/AddProduct
         [HttpPost("AddProduct")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> AddProduct(ProductDTO productDto)
@@ -154,7 +154,7 @@ namespace YogeshFurnitureAPI.Controllers
 
         // DELETE: api/Product/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> DeleteProduct(int id)

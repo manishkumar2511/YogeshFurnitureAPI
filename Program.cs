@@ -137,7 +137,7 @@ app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseStaticFiles();
-app.UseMiddleware<AuthenticationMiddleware>();
+//app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

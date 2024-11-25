@@ -76,6 +76,11 @@ namespace YogeshFurnitureAPI.Service
             {
                 return new ResponseMessage("Product not found.", null, false, (int)HttpStatusCode.NotFound);
             }
+            var imagePath = Path.Combine("wwwroot/images", product.ImageUrl);
+            if (File.Exists(imagePath))
+            {
+                File.Delete(imagePath);
+            }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
