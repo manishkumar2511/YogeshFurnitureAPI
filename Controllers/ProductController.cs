@@ -49,7 +49,7 @@ namespace YogeshFurnitureAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByCategory), ex.Message);
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByProductId), ex.Message);
                 return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products for the category." });
             }
         }
@@ -104,30 +104,30 @@ namespace YogeshFurnitureAPI.Controllers
         }
 
         // GET: api/Product/GetProductsByCategory/{categoryId}
-        [HttpGet("GetProductsByCategory/{categoryId}")]
+        [HttpGet("GetProductsByProductId/{productId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
-        public async Task<IActionResult> GetProductsByCategory(int categoryId)
+        public async Task<IActionResult> GetProductsByProductId(int productId)
         {
             try
             {
-                var result = await _productService.GetProductsByCategoryAsync(categoryId);
+                var result = await _productService.GetProductsByProductIdAsync(productId);
 
                 if (result.IsSuccessfull)
                     return Ok(result);
 
-                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "No products found for the selected category." });
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "No products found for the selected productId." });
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByCategory), ex.Message);
-                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products for the category." });
+                _logger.LogError("Error in {controller}/{action}: {message}", nameof(ProductController), nameof(GetProductsByProductId), ex.Message);
+                return BadRequest(new ErrorMessageWrapper { ErrorMessage = "Error fetching products for the productId." });
             }
         }
 
-        // PUT: api/Product/{id}
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        // PUT: api/Product/UpdateProduct/{id}
+        [HttpPut("UpdateProduct/{id}")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResponseMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorMessageWrapper))]
         public async Task<IActionResult> UpdateProduct(int id, ProductDTO productDto)

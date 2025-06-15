@@ -99,10 +99,10 @@ namespace YogeshFurnitureAPI.Service
             return new Response(products, products.Count, true, (int)HttpStatusCode.OK);
         }
 
-        public async Task<Response> GetProductsByCategoryAsync(int categoryId)
+        public async Task<Response> GetProductsByProductIdAsync(int productId)
         {
             var products = await _context.Products
-                                          .Where(p => p.CategoryId == categoryId)
+                                          .Where(p => p.ProductId == productId)
                                           .Include(p => p.Category).AsNoTracking()
                                           .ToListAsync();
 
